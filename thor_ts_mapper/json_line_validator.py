@@ -9,18 +9,20 @@ logger = LoggerConfig.get_logger(__name__)
 class JSONLineValidator:
 
     @staticmethod
-    def validate_json(json_str: str) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    def validate_json(json_str: str) -> Dict[str, Any]:
         try:
             json_obj = json.loads(json_str)
-            return JSONLineValidator._validate_json_object(json_obj)
         except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {str(e)}")
             raise JsonValidationError(f"JSON decode error: {str(e)}")
 
+        return JSONLineValidator._validate_json_object(json_obj)
+
     @staticmethod
-    def _validate_json_object(json_obj: Any) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    def _validate_json_object(json_obj: Any) -> Dict[str, Any]:
         if not isinstance(json_obj, dict):
             logger.error("Not a valid JSON object")
-            return False, None
+            raise JsonValidationError("Not a valid JSON object: Expected a dictionary.")
 
         logger.debug("JSON validation successful")
-        return True, json_obj
+        return  json_obj

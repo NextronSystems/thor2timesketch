@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-with open("requirements.txt", "r", encoding="utf-8") as f:
-    requirements = f.read().splitlines()
+with open("README.md", "r", encoding="utf-8") as readme_file:
+    long_description = readme_file.read()
+with open("requirements.txt", "r", encoding="utf-8") as requirements_file:
+    requirements = requirements_file.read().splitlines()
 
 
 setup(
@@ -15,6 +15,8 @@ setup(
     author_email='ion.cicala@nextron-systems.com',
     description='Convert THOR security scanner logs to Timesketch format',
     classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+        "Environment :: Console",
         "Programming Language :: Python :: 3",
         "License :: Other/Proprietary License",
         "Operating System :: OS Independent",

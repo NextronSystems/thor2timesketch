@@ -4,15 +4,15 @@ from thor_ts_mapper.logger_config import LoggerConfig
 
 logger = LoggerConfig.get_logger(__name__)
 
-class JSONFlattener:
+class THORJSONFlattener:
     DELIMITER = '_'
 
     @staticmethod
-    def _index_to_letter(idx: int) -> str:
+    def _index_to_letter(index: int) -> str:
         result = ""
-        idx += 1
-        while idx > 0:
-            idx, remainder = divmod(idx - 1, 26)
+        index += 1
+        while index > 0:
+            index, remainder = divmod(index - 1, 26)
             result = chr(65 + remainder) + result
         return result
 
@@ -30,12 +30,12 @@ class JSONFlattener:
 
                 if isinstance(current, dict):
                     for key, value in current.items():
-                        new_key = f"{key_path}{JSONFlattener.DELIMITER}{key}" if key_path else key
+                        new_key = f"{key_path}{THORJSONFlattener.DELIMITER}{key}" if key_path else key
                         queue.append((value, new_key))
                 elif isinstance(current, list):
-                    for idx, item in enumerate(current):
-                        alpha_index = JSONFlattener._index_to_letter(idx)
-                        new_key = f"{key_path}{JSONFlattener.DELIMITER}{alpha_index}"
+                    for index, item in enumerate(current):
+                        alpha_index = THORJSONFlattener._index_to_letter(index)
+                        new_key = f"{key_path}{THORJSONFlattener.DELIMITER}{alpha_index}"
                         queue.append((item, new_key))
                 else:
                     flattened[key_path] = current
