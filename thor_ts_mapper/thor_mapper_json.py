@@ -2,10 +2,15 @@ from abc import abstractmethod, ABC
 from typing import Dict, Any, List, Optional
 from thor_ts_mapper.logger_config import LoggerConfig
 from thor_ts_mapper.thor_timestamp_extractor import ThorTimestampExtractor
-
+from dateutil import parser
+from datetime import timezone
 logger = LoggerConfig.get_logger(__name__)
 
-class THORMapperJson(ABC):
+class THORMapperJson:
+    THOR_TIMESTAMP_FIELD: str = ""
+    THOR_MESSAGE_FIELD: str = ""
+    THOR_MODULE_FIELD: str = ""
+
     def map_thor_events(self, json_line: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         timestamps_fields = THORMapperJson._get_timestamp_extract(json_line)
@@ -49,23 +54,43 @@ class THORMapperJson(ABC):
     def _get_timestamp_extract(json_line: Dict[str, Any]) -> List[str]:
         return ThorTimestampExtractor.extract_datetime(json_line)
 
-    @abstractmethod
+
     def _get_message(self, json_line: Dict[str, Any]) -> str:
-        pass
+        message = json_line.get(self.THOR_MESSAGE_FIELD)
+        if not message:
+            logger.debug("No message found in THOR event, using default message.")
+            message = "THOR APT scanner message."
+        return message
 
-    @abstractmethod
     def _get_datetime(self, json_line: Dict[str, Any], field_name: Optional[str] = None) -> str:
-        pass
+        field = field_name if field_name is not None else self._get_thor_timestamp_field()
+        value = json_line.get(field)
+        try:
+            timestamp = parser.isoparse(value)
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.replace(tzinfo=timezone.utc)
+            return timestamp.isoformat()
+        except (ValueError, TypeError):
+            logger.error(f"Invalid datetime format at {field}: {value}")
+            return value
 
 
-    @abstractmethod
     def _get_timestamp_desc(self, json_line: Dict[str, Any], field_name: Optional[str] = None) -> str:
-        pass
+        module = json_line.get(self.THOR_MODULE_FIELD)
+        if field_name is None or field_name == self._get_thor_timestamp_field():
+            return "Timestamp of THOR scan execution"
+        else:
+            return f"{module} - {field_name}"
 
-    @abstractmethod
     def _get_additional_fields(self, json_line: Dict[str, Any], field_name: Optional[str] = None) -> Dict[str, Any]:
-        pass
+        exclude_fields = {self.THOR_MESSAGE_FIELD, self._get_thor_timestamp_field()}
+        return {
+            field: value for field, value in json_line.items()
+            if field not in exclude_fields
+        }
 
-    @abstractmethod
     def _get_thor_timestamp_field(self) -> str:
-        pass
+        return self.THOR_TIMESTAMP_FIELD
+
+
+

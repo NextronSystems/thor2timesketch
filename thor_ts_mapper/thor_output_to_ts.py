@@ -1,10 +1,10 @@
 import os.path
 from typing import Dict, Union
-
+from alive_progress import alive_bar
 from timesketch_import_client import importer
 from timesketch_api_client import config as timesketch_config
 from thor_ts_mapper.logger_config import LoggerConfig
-from thor_ts_mapper.progress_bar import ProgressBar
+
 
 logger = LoggerConfig.get_logger(__name__)
 
@@ -12,11 +12,10 @@ class THORIngestToTS:
 
     TS_SCOPE = ['user', 'shared']
 
-    def __init__(self, thor_file: str, sketch: Union[int, str] = None, progress_bar: ProgressBar = None):
+    def __init__(self, thor_file: str, sketch: Union[int, str] = None):
         self.ts_client = timesketch_config.get_client()
         self.timeline_name = self._get_timeline_name(thor_file)
         self.my_sketch = self._load_sketch(sketch)
-        self.progress_bar = progress_bar
 
     def _get_timeline_name(self, thor_file) -> str:
             return os.path.splitext(os.path.basename(thor_file))[0]
@@ -54,15 +53,16 @@ class THORIngestToTS:
 
 
     def ingest_events(self, events) -> None:
-
-        with importer.ImportStreamer() as streamer:
-            streamer.set_sketch(self.my_sketch)
-            streamer.set_timeline_name(self.timeline_name)
-            for event in events:
-                try:
-                    streamer.add_dict(event)
-                    self.progress_bar.update(1)
-                except Exception as e:
-                    logger.error("Error adding event to streamer: %s", e)
-        logger.info("Successfully ingested events into sketch ""%s", self.my_sketch.name)
-        self.progress_bar.close()
+        with alive_bar(spinner='dots', title=f"Ingesting to sketch '{self.my_sketch.name}'") as bar:
+            with importer.ImportStreamer() as streamer:
+                streamer.set_sketch(self.my_sketch)
+                streamer.set_timeline_name(self.timeline_name)
+                streamer.set_upload_context(self.timeline_name)
+                for event in events:
+                    try:
+                        streamer.add_dict(event)
+                        bar()
+                    except Exception as e:
+                        logger.error("Error adding event to streamer: %s", e)
+            logger.info(f"Successfully ingested events into sketch '{self.my_sketch.name}'")
+            logger.info("The timeline will continue to be indexed in the background")

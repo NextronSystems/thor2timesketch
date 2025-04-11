@@ -5,7 +5,6 @@ from thor_ts_mapper.thor_input_reader import THORJSONInputReader
 from thor_ts_mapper.thor_json_flattener import THORJSONFlattener
 from thor_ts_mapper.logger_config import LoggerConfig
 from thor_ts_mapper.thor_json_log_version import THORJSONLogVersionMapper
-from thor_ts_mapper.progress_bar import ProgressBar
 
 logger = LoggerConfig.get_logger(__name__)
 
@@ -14,6 +13,7 @@ class THORJSONTransformer:
 
     @staticmethod
     def transform_thor_logs(input_file: str) -> Generator[dict, None, None]:
+
         valid_thor_logs = THORJSONInputReader.get_valid_json(input_file)
         if valid_thor_logs is None:
             logger.error("No valid thor logs found")
@@ -31,6 +31,7 @@ class THORJSONTransformer:
 
                     for event in mapped_events:
                         yield event
+
                 except Exception as e:
                     logger.error(f"Error processing THOR log: {e}")
                     raise
@@ -38,3 +39,4 @@ class THORJSONTransformer:
             logger.debug("Finished transforming THOR logs")
 
         return generate_mapped_logs()
+

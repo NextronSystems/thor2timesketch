@@ -8,7 +8,6 @@ from thor_ts_mapper.logger_config import LoggerConfig
 from thor_ts_mapper.thor_json_transformer import THORJSONTransformer
 from thor_ts_mapper.thor_output_to_file import THOROutputToFile
 from thor_ts_mapper.thor_output_to_ts import THORIngestToTS
-from thor_ts_mapper.progress_bar import ProgressBar
 
 logger = LoggerConfig.get_logger(__name__)
 
@@ -84,18 +83,11 @@ class MainControllerCLI:
 
         try:
             mapped_events = THORJSONTransformer.transform_thor_logs(input_file)
-
-
             if output_to_file:
-                file_progress_bar = ProgressBar(desc=f"Writing to {output_file}")
-                logger.info(f"Writing mapped events to file: {output_file}")
-                write_to_file = THOROutputToFile(output_file, file_progress_bar )
+                write_to_file = THOROutputToFile(output_file)
                 write_to_file.write_to_file(mapped_events)
-
             if output_to_ts:
-                ts_progress_bar = ProgressBar(desc="Uploading to Timesketch")
-                logger.info(f"Ingesting events to Timesketch with sketch identifier: {ts_sketch}")
-                upload_to_ts = THORIngestToTS(thor_file=input_file, sketch=ts_sketch, progress_bar=ts_progress_bar)
+                upload_to_ts = THORIngestToTS(thor_file=input_file, sketch=ts_sketch)
                 upload_to_ts.ingest_events(mapped_events)
 
             logger.info("THOR log processing completed successfully")
