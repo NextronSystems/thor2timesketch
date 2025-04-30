@@ -1,0 +1,42 @@
+name: Code Quality & Security Scan
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+env:
+  PYTHON_VERSION: 3.9
+jobs:
+  quality-and-security:
+    name: Code Quality and Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dev dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Ruff (auto-fix)
+        run: ruff check --fix .
+
+      - name: MyPy
+        run: mypy -p thor2timesketch
+
+      - name: Bandit security scan
+        run: |
+          pip install bandit
+          bandit -r src/thor2timesketch
+
+      - name: Dependency audit
+        run: |
+          pip install pip-audit
+          pip freeze --exclude-editable > audit-requirements.txt
+          pip-audit --requirement audit-requirements.txt
