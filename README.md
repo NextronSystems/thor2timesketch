@@ -174,8 +174,8 @@ Contributions to `thor2ts` are welcome! To contribute:
 
 ---
 ## Support
-If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSystems/thor-ts-mapper/issues).
+If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSystems/thor2timesketch/issues).
 
 ---
 
-![Release](https://github.com/NextronSystems/thor-ts-mapper/actions/workflows/release-thor2ts.yml/badge.svg)
+![Release](https://github.com/NextronSystems/thor2timesketch/actions/workflows/release-thor2ts.yml/badge.svg)

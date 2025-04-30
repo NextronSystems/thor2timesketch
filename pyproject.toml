@@ -48,8 +48,8 @@ publish = ["build", "twine", "hatch-vcs"]
 directory = "src"
 
 [project.urls]
-Homepage = "https://github.com/NextronSystems/thor-ts-mapper.git"
-Issues = "https://github.com/NextronSystems/thor-ts-mapper/issues"
+Homepage = "https://github.com/NextronSystems/thor2timesketch.git"
+Issues = "https://github.com/NextronSystems/thor2timesketch/issues"
 
 [project.scripts]
 thor2ts = "thor2timesketch.__main__:main"
