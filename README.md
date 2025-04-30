@@ -52,14 +52,13 @@ This utility supports THOR JSON log format v2 and is designed with forward compa
 
 ## Features
 
-1. Validates and reads the input THOR JSON file
-2. Flattening THOR logs for efficient indexing and searching
-3. Identifies the THOR log version and selects the appropriate mapper
-4. Extracts relevant information and timestamps from each log entry
-5. Maps THOR fields to Timesketch's required format (message, datetime, timestamp_desc)
-6. Writes the mapped events to a single JSONL output file
-7. The resulting .jsonl file can be ingested into Timesketch using either the Web UI or the [Importer CLI tool](https://timesketch.org/guides/user/cli-client/)
-8. Supports ingestion into Timesketch sketch by specifying the sketch ID or name
+1. Validate and read the input THOR JSON file
+2. Identify the THOR log version and select the appropriate mapper
+3. Extracts relevant information and timestamps from each log entry
+4. Maps THOR fields to Timesketch's required format (message, datetime, timestamp_desc)
+5. Write the mapped events to a single JSONL output file
+6. The resulting .jsonl file can be ingested into Timesketch using either the Web UI or the [Importer CLI tool](https://timesketch.org/guides/user/cli-client/)
+7. Supports ingestion into Timesketch sketch by specifying the sketch ID or name
 ---
 
 ## Installation for MacOS and Linux
@@ -69,37 +68,27 @@ Make sure you have the following installed on your system:
 - [Python 3.9](https://www.python.org/downloads/) or higher
 - Python venv package 
  *(e.g., on Ubuntu/Debian: `sudo apt install python3-venv`)*
-- [THOR](https://www.nextron-systems.com/thor/) JSON logs (v2 or v3) as input for `thor2ts`
+- [THOR](https://www.nextron-systems.com/thor/) JSON log version - v1.0.0 as input for `thor2ts`
 
 ### Steps
-1. Clone the repository:
+1. Create a virtual environment:
 ```bash
-git clone https://github.com/TBD/thor-ts-mapper.git
-cd thor-ts-mapper
+python3 -m venv thor2ts-venv
 ```
-2. Install `thor2ts` by sourcing the `install_thor2ts.sh` script:
+2. Activate the virtual environment `thor2ts-venv`:
 ```bash
-source install_thor2ts.sh
+source thor2ts-venv/bin/activate
 ```
-This script will:
-
-* Check for prerequisites
-* Create a virtual environment named `venv-thor2ts`
-* Install thor2ts within the virtual environment
-* Activate the virtual environment
-
-Alternatively, you can run the script with `bash`:
+3. Install thor2timesketch package:
 ```bash
-bash install_thor2ts.sh
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple thor2timesketch
 ```
-> **Note:** Activate the virtual environment `venv-thor2ts`
 
 3. Future Use
 To use `thor2ts` in the new terminal, activate the virtual environment:
 ```bash
-source /path/to/thor-ts-mapper/venv-thor2ts/bin/activate
+source /path/to/thor2ts-venv/bin/activate
 ```
-Alternatively, you can source the `install_thor2ts.sh` script again.
 
 ---
 
@@ -107,23 +96,23 @@ Alternatively, you can source the `install_thor2ts.sh` script again.
 Once the virtual environment is active, you can run the tool from the command line:
 
 ```bash
-thor2ts <input_file> [-o <output_file>] [--ts_sketch <sketch_id_or_name>] [-v]
+thor2ts <input_file> [-o <output_file>] [--sketch <sketch_id_or_name>] [-v]
 ```
 ### Command-Line Arguments
-* `input_file` - Path to the THOR JSON file that you want to convert
+* `input-file` - Path to the THOR JSON file that you want to convert (required).
 
-* `-o output_file` - Path to the output file.
+* `-o output-file` - Path to the output file (optional).
 
-* `--ts_sketch <sketch_id_or_name>` - Specifies the Timesketch sketch ID or name for automatic ingestion.
+* `--sketch <sketch_id_or_name>` - Specifies the Timesketch sketch ID or name for automatic ingestion (optional).
   - If the sketch does not exist, it will be created.
 * `-v, --verbose` - Enable verbose output (optional)
 * `--version` - Show the version of the tool and exit (optional)
 ### Examples
-- **Basic Usage**: Convert a THOR JSON file to Timesketch format:
+- **File output**: Convert THOR JSON logs to Timesketch format and save to a file:
 ```bash
 thor2ts thor_scan.json -o mapped_events.jsonl
 ```
-- **Ingest into Timesketch**: Convert and ingest the THOR JSON events into a Timesketch sketch:
+- **Timesketch Ingestion**: Convert and ingest the THOR JSON events into a Timesketch sketch:
 ```bash
 thor2ts thor_scan.json --ts_sketch "THOR APT Sketch"
 ```
@@ -152,11 +141,13 @@ client_secret =
 auth_mode = userpass
 cred_key = <generated_key>
 ```
+For more detailed information about the Timesketch API client configuration and usage, please check out the [Timesketch API client documentation](https://timesketch.org/developers/api-client/).
+
 ---
 ## Input and Output Files
 
 **Input Files:**
-- **THOR** JSON log files (version **v2** or **v3**).
+- **THOR** JSON log files (version **v1.0.0**).
 
 **Output Files:**
 - The tool produces a JSONL file containing timesketch formated events.
@@ -164,16 +155,15 @@ cred_key = <generated_key>
 - If the file exists, new events are appended.
 - If the output directory does not exist, it is created automatically.
 ### Warning
-> Timesketch accepts only JSON files with a `.jsonl` extension.
+> Timesketch accepts only **JSON** files with a `.jsonl` extension. [Timesketch documentation](https://timesketch.org/guides/user/import-from-json-csv/)
 
 ---
-
-
 ## Ingesting into Timesketch
 ### File `jsonl`
 The resulting (`.jsonl`) file can be ingested into Timesketch using either the Web UI or the [Importer CLI tool](https://timesketch.org/guides/user/cli-client/).
 ### Sketch flag
-If you specify the `--ts_sketch` flag, the tool will automatically ingest the mapped events into the specified Timesketch sketch.
+If you specify the `--sketch` flag, the tool will automatically ingest the mapped events into the specified Timesketch sketch.
+After uploading, the tool monitors the **indexing process** for `60 seconds`. If indexing completes within this window, you'll see a success message, otherwise, the indexing continues in the background within Timesketch while the tool exits.
 
 ---
 ## Contributing
@@ -184,6 +174,8 @@ Contributions to `thor2ts` are welcome! To contribute:
 
 ---
 ## Support
-If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSytems/thor-ts-mapper.git).
+If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSystems/thor-ts-mapper/issues).
 
 ---
+
+![Release](https://github.com/NextronSystems/thor-ts-mapper/actions/workflows/release-thor2ts.yml/badge.svg)

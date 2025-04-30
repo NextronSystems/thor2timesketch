@@ -1,5 +1,4 @@
-colorlog~=6.9.0
-python-dateutil~=2.9.0.post0
-setuptools~=68.2.0
-alive-progress~=3.2.0
 timesketch_import_client
+types-python-dateutil
+typer~=0.15.2
+rich~=14.0.0

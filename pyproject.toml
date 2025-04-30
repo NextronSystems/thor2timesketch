@@ -1,0 +1,64 @@
+[build-system]
+requires = [
+  "hatchling >= 1.26",
+  "hatch-vcs>= 0.4.0"
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "thor2timesketch"
+dynamic = ["version"]
+authors = [
+  { name = "Ion Cicala (Nextron Systems GmbH)", email = "ion.cicala@nextron-systems.com" }
+]
+description = "Convert THOR security scanner logs to Timesketch format"
+readme = "README.md"
+readme-content-type = "text/markdown"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+license-files = ["LICEN[CS]E*"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+keywords = ["thor", "timesketch", "nextron", "thor2timesketch", "thor2ts"]
+dependencies = [
+  "timesketch_import_client",
+  "types-python-dateutil",
+  "typer",
+  "rich"
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+local_scheme   = "no-local-version"
+version_scheme = "no-guess-dev"
+
+
+[project.optional-dependencies]
+dev = ["pytest", "mypy", "ruff"]
+publish = ["build", "twine", "hatch-vcs"]
+
+[tool.hatch.build.sources]
+directory = "src"
+
+[project.urls]
+Homepage = "https://github.com/NextronSystems/thor-ts-mapper.git"
+Issues = "https://github.com/NextronSystems/thor-ts-mapper/issues"
+
+[project.scripts]
+thor2ts = "thor2timesketch.__main__:main"
+
+[tool.ruff]
+line-length = 79
+exclude = ["build", "dist", ".venv"]
+fix = true
+
+[tool.ruff.lint]
+ignore = []
+fixable = ["ALL"]
