@@ -1,0 +1,100 @@
+filters:
+  levels:
+  - Alert
+  - Warning
+  - Notice
+  - Info
+  modules:
+    include:
+    - AtJobs
+    - Autoruns
+    - DNSCache
+    - EnvCheck
+    - EtwWatcher
+    - Eventlog
+    - Events
+    - Filescan
+    - Firewall
+    - Hosts
+    - HotfixCheck
+    - LSASessions
+    - LoggedIn
+    - Mutex
+    - NetworkSessions
+    - NetworkShares
+    - Pipes
+    - ProcessCheck
+    - RegistryChecks
+    - Rootkit
+    - SHIMCache
+    - ScheduledTasks
+    - ServiceCheck
+    - Timestomp
+    - UserDir
+    - Users
+    - WMIStartup
+    exclude:
+    - Artifact-Collector
+    - DeepDive
+    - Dropzone
+    - MFT
+    - Thunderstorm
+  features:
+    include:
+    - Amcache
+    - Archive
+    - ArchiveScan
+    - AtJobs
+    - Auditlog
+    - AuthorizedKeys
+    - Bifrost2
+    - BulkScan
+    - C2
+    - CPULimit
+    - CheckString
+    - CronParser
+    - DoublePulsar
+    - ETL
+    - EVTX
+    - Eml
+    - EnrichFileInfo
+    - ExeDecompress
+    - FilenameIOCs
+    - Filescan
+    - GroupsXML
+    - KeywordIOCs
+    - Lnk
+    - LogScan
+    - Logger
+    - MagicHeader
+    - OLE
+    - ParseCobaltStrike
+    - Prefetch
+    - ProcessConnections
+    - ProcessHandles
+    - ProgressTracker
+    - RecycleBin
+    - RegistryHive
+    - Rescontrol
+    - SHIMCache
+    - Sigma
+    - SignalHandler
+    - Stix
+    - TeamViewer
+    - ThorDB
+    - VirusTotal
+    - VulnerabilityCheck
+    - WER
+    - WMIPersistence
+    - WebdirScan
+    - WorkerProgressTracker
+    - Yara
+    exclude:
+    - AuditTrail
+    - AuditTrailWriter
+    - Bifrost
+    - DumpScan
+    - ProcessIntegrity
+  audit:
+    - findings
+    - info

@@ -28,8 +28,10 @@ keywords = ["thor", "timesketch", "nextron", "thor2timesketch", "thor2ts"]
 dependencies = [
   "timesketch_import_client",
   "types-python-dateutil",
-  "typer",
-  "rich"
+  "typer~=0.15.2",
+  "rich~=14.0.0",
+  "python-dateutil~=2.9.0.post0",
+  "PyYAML~=6.0.2"
 ]
 
 [tool.hatch.version]
@@ -41,7 +43,13 @@ version_scheme = "no-guess-dev"
 
 
 [project.optional-dependencies]
-dev = ["pytest", "mypy", "ruff"]
+dev = [
+  "pytest",
+  "mypy",
+  "ruff",
+  "types-PyYAML",
+  "black"
+]
 publish = ["build", "twine", "hatch-vcs"]
 
 [tool.hatch.build.sources]
@@ -62,3 +70,6 @@ fix = true
 [tool.ruff.lint]
 ignore = []
 fixable = ["ALL"]
+
+[tool.mypy]
+explicit_package_bases = true

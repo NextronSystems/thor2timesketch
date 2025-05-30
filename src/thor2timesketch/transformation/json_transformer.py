@@ -1,56 +1,83 @@
 import os
-from typing import Dict, Any, Iterator
-from thor2timesketch import constants
-from thor2timesketch.exceptions import ProcessingError, MappingError, VersionError, InputError
+from typing import Dict, Any, Iterator, Optional
+from thor2timesketch.config.filter_findings import FilterFindings
+from thor2timesketch.constants import MB_CONVERTER
+from thor2timesketch.config.console_config import ConsoleConfig
+from thor2timesketch.exceptions import (
+    ProcessingError,
+    VersionError,
+    FilterConfigError,
+    FileValidationError,
+)
 from thor2timesketch.input.json_reader import JsonReader
-from thor2timesketch.config.logger import LoggerConfig
 from thor2timesketch.mappers.json_log_version import JsonLogVersion
+from thor2timesketch.mappers.mapper_json_base import MapperJsonBase
 from thor2timesketch.mappers.mapper_loader import load_all_mappers
-
-logger = LoggerConfig.get_logger(__name__)
+from thor2timesketch.transformation.pretransformation_processor import (
+    PreTransformationProcessor,
+)
+from pathlib import Path
 
 
 class JsonTransformer:
+
     def __init__(self) -> None:
         load_all_mappers()
-        self.input_reader = JsonReader()
-        self.log_version_mapper = JsonLogVersion()
-        self.mb_converter = constants.MB_CONVERTER
+        self.reader = JsonReader()
+        self.version_mapper = JsonLogVersion()
 
-    def transform_thor_logs(self, input_json_file: str) -> Iterator[Dict[str, Any]]:
+    def transform_thor_logs(
+        self, input_file: Path, filter_path: Optional[Path]
+    ) -> Iterator[Dict[str, Any]]:
         try:
-            valid_thor_logs = self.input_reader.get_valid_data(input_json_file)
-            if valid_thor_logs is None:
-                message_err = "No valid THOR logs found"
-                logger.error(message_err)
-                raise ProcessingError(message_err)
+            selectors = FilterFindings.read_filters_yaml(filter_path)
+            pre_transform = PreTransformationProcessor(filter_path)
+        except FilterConfigError as e:
+            raise FileValidationError(f"Error reading filter configuration: {e}") from e
 
-            file_size = os.path.getsize(input_json_file)
-            logger.info(f"Processing input file: '{input_json_file}' ('{file_size / self.mb_converter:.2f}' MB)")
-            return self._generate_mapped_logs(valid_thor_logs)
-        except InputError:
-            raise
-        except Exception as error:
-            message_err = f"Error transforming THOR logs: {error}"
-            logger.error(message_err)
-            raise ProcessingError(message_err) from error
+        raw_lines = self.reader.get_valid_data(input_file)
+        self._log_start(input_file)
+        yield from self._generate_events(raw_lines, selectors, pre_transform)
+        self._log_end(input_file)
 
-    def _generate_mapped_logs(self, valid_thor_logs: Iterator[Dict[str, Any]]) -> Iterator[Dict[str, Any]]:
-        for json_line in valid_thor_logs:
+    def _generate_events(
+        self,
+        events: Iterator[Dict[str, Any]],
+        selectors: FilterFindings,
+        pre_transform: PreTransformationProcessor,
+    ) -> Iterator[Dict[str, Any]]:
+        for entry in events:
             try:
-                version_mapper = self.log_version_mapper.get_mapper_for_version(json_line)
-                if version_mapper.check_thor_log(json_line):
-                    mapped_events = version_mapper.map_thor_events(json_line)
-                    for event in mapped_events:
-                        yield event
-            except VersionError as error:
-                message_err = f"Error mapping THOR log version: {error}"
-                logger.error(message_err)
-                raise MappingError(message_err) from error
+                logs = pre_transform.transformation(entry)
+            except FilterConfigError as e:
+                raise ProcessingError("Error in pre-transformation processing") from e
+            for json_log in logs:
+                try:
+                    mapper = self.version_mapper.get_mapper_for_version(json_log)
+                except VersionError as e:
+                    raise ProcessingError(f"Error detecting log version: {e}") from e
 
-            except Exception as error:
-                message_err = f"Error mapping THOR log: {error}"
-                logger.error(message_err)
-                raise MappingError(message_err) from error
+                if self._is_eligible(json_log, mapper, selectors):
+                    yield from mapper.map_thor_events(json_log)
 
-        logger.debug("Finished transforming THOR logs")
+    def _is_eligible(
+        self,
+        json_log: Dict[str, Any],
+        mapper: MapperJsonBase,
+        selectors: FilterFindings,
+    ) -> bool:
+        if not mapper.requires_filter():
+            return True
+        level, module = mapper.get_filterable_fields(json_log)
+        return selectors.matches_filter_criteria(level, module)
+
+    def _log_start(self, input_file: Path) -> None:
+        size = os.path.getsize(input_file) / MB_CONVERTER
+        ConsoleConfig.info(
+            f"Starting transforming events from input file: `{input_file}` ({size:.2f} MB)"
+        )
+
+    def _log_end(self, input_file: Path) -> None:
+        ConsoleConfig.success(
+            f"Finished transforming events from input file: `{input_file}`"
+        )
