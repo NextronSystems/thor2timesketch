@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import Dict, Union, Any, Iterator
+from typing import Dict, Union, Any, Iterator, Optional
 from timesketch_import_client import importer
 from timesketch_api_client import config as timesketch_config
 from thor2timesketch.config.console_config import ConsoleConfig
@@ -11,7 +11,9 @@ from thor2timesketch.utils.progress_bar import ProgressBar
 
 class TSIngest:
 
-    def __init__(self, thor_file: Path, sketch: str) -> None:
+    def __init__(
+        self, thor_file: Path, sketch: str, buffer_size: Optional[int] = None
+    ) -> None:
         self.thor_file = thor_file
         self.ts_client = timesketch_config.get_client()
         if not self.ts_client:
@@ -21,6 +23,7 @@ class TSIngest:
         self.timeline_name: str = self.thor_file.stem
         sketch_type: Union[int, str] = self._identify_sketch_type(sketch)
         self.my_sketch: Any = self._load_sketch(sketch_type)
+        self.buffer_size: Optional[int] = buffer_size
 
     def _identify_sketch_type(self, sketch: str) -> Union[int, str]:
         return int(sketch) if sketch.isdigit() else sketch
@@ -84,6 +87,8 @@ class TSIngest:
                     streamer.set_timeline_name(self.timeline_name)
                     streamer.set_provider("thor2ts")
                     streamer.set_upload_context(self.timeline_name)
+                    if self.buffer_size:
+                        streamer.set_entry_threshold(self.buffer_size)
 
                     for event in events:
                         try:

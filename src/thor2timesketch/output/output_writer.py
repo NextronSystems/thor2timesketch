@@ -12,10 +12,12 @@ class OutputWriter:
         input_file: Path,
         output_file: Optional[Path] = None,
         sketch: Optional[str] = None,
+        buffer_size: Optional[int] = None,
     ) -> None:
         self.input_file = input_file
         self.output_file = output_file
         self.sketch = sketch
+        self.buffer_size = buffer_size
 
     def write(self, events: Iterator[Dict[str, Any]]) -> None:
         try:
@@ -26,7 +28,9 @@ class OutputWriter:
                     raise
             if self.sketch:
                 try:
-                    TSIngest(self.input_file, self.sketch).ingest_events(events)
+                    TSIngest(
+                        self.input_file, self.sketch, self.buffer_size
+                    ).ingest_events(events)
                 except TimesketchError:
                     raise
         except Exception as e:
