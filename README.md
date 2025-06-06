@@ -326,6 +326,6 @@ Contributions to `thor2ts` are welcome! To contribute:
 
 ---
 ## Support
-If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSytems/thor-ts-mapper.git/issues).
+If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSystems/thor-ts-mapper.git/issues).
 
 ---
