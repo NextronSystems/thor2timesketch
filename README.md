@@ -162,7 +162,7 @@ ___
 
 Thor2timesketch supports two filter scopes:
 
-### 1. [Standard THOR logs (JSON v1 / v2)]((https://thor-manual.nextron-systems.com/en/latest/usage/output-options.html#json-output-json))
+### 1. [Standard THOR logs (JSON v1 / v2)](https://thor-manual.nextron-systems.com/en/latest/usage/output-options.html#json-output-json)
 
 - **filters.levels**  
   A list of THOR log `level` values to include (e.g., `Alert`, `Warning`).
@@ -310,7 +310,7 @@ _**Issues recorded on 20.05.2025**_
 
 ### 4. Web UI upload errors
 - **Symptom:** Web UI rejects large `JSONL entries` `“Unterminated string in JSON at position ...”`.  
-- **Cause:** Browser-based uploader [can’t handle very large files]((https://github.com/google/timesketch/issues/3243)) or large JSONL entries  
+- **Cause:** Browser-based uploader [can’t handle very large files](https://github.com/google/timesketch/issues/3243) or large JSONL entries  
 - **Solution**:
   - Ingest directly using `thor2ts` with the `-s, --sketch` argument.
   - Import via [CLI importer](https://timesketch.org/guides/user/cli-client/) for already mapped THOR events from a `JSONL` file:
