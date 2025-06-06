@@ -1,11 +1,13 @@
-name: Build Status
+name: Release to PyPI
 
 on:
   push:
     tags:
-      - '*.*.*a*'
+      - 'v*.*.*'
+
 env:
-    PYTHON_VERSION: '3.9'
+  PYTHON_VERSION: '3.9'
+
 jobs:
   build:
     name: Build distribution
@@ -35,17 +37,16 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-  publish-testpypi:
-    name: Publish Python distribution to TestPyPI
+  publish-to-pypi:
+    name: Publish thor2ts distribution to PyPI
     if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
-      url: https://test.pypi.org/p/thor2timesketch
+      name: pypi
+      url: https://pypi.org/p/thor2timesketch
     permissions:
-        id-token: write
-
+      id-token: write
     steps:
       - name: Download distribution packages
         uses: actions/download-artifact@v4
@@ -53,14 +54,12 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-      - name: Publish to TestPyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
 
-  verify-testpypi-installation:
-    name: Verify TestPyPI Installation
-    needs: publish-testpypi
+  verify-pypi-installation:
+    name: Verify PyPI Installation
+    needs: publish-to-pypi
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v5
@@ -72,13 +71,11 @@ jobs:
           python -m venv thor2ts-venv
           echo "PATH=$GITHUB_WORKSPACE/thor2ts-venv/bin:$PATH" >> $GITHUB_ENV
 
-      - name: Install from TestPyPI
+      - name: Install from PyPI
         run: |
           source thor2ts-venv/bin/activate
-          sleep 30
-          pip install --index-url https://test.pypi.org/simple/ \
-                      --extra-index-url https://pypi.org/simple \
-                      thor2timesketch
+          sleep 30  # Optional: allow for mirror sync delay
+          pip install thor2timesketch
 
       - name: Verify version
         run: |

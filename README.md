@@ -80,7 +80,7 @@ Make sure you have the following installed on your system:
     ```
 3. Install thor2timesketch package:
     ```bash
-    pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple thor2timesketch
+    pip install thor2timesketch
     ```
 
 4. Future Use
