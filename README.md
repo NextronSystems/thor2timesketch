@@ -160,7 +160,7 @@ For more detailed information about the Timesketch API client configuration and 
 ___
 ## Filter Configuration
 
-Thor2timesketch supports two filter scopes:
+Thor2timesketch supports two filter scopes. The usage of filters is optional and sane defaults are used (that can be explicitly written to a config using the `--generate-filter` flag):
 
 ### 1. [Standard THOR logs (JSON v1 / v2)](https://thor-manual.nextron-systems.com/en/latest/usage/output-options.html#json-output-json)
 
