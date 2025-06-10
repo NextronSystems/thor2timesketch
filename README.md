@@ -121,7 +121,7 @@ thor2ts [input_file] [arguments]
 ---
 ## Configuration for Timesketch Ingestion
 
-When you ingest for the first time (`-s, --sketch`), it will be prompted to enter your Timesketch connection settings:
+When you ingest for the first time (`-s, --sketch`), you will be prompted to enter your Timesketch connection settings:
 
 1. **host_uri**
    URL of your Timesketch server (e.g. `https://timesketch.example.com`)
