@@ -36,7 +36,7 @@ This log conversion utility makes it easy to import [THOR](https://www.nextron-s
 ## Overview
 
 
-[![thor2ts](https://img.shields.io/badge/dynamic/json?label=thor2ts&query=%24.info.version&url=https://test.pypi.org/pypi/thor2timesketch/json)](https://test.pypi.org/project/thor2timesketch/)
+[![thor2ts](https://img.shields.io/badge/dynamic/json?label=thor2ts&query=%24.info.version&url=https://pypi.org/pypi/thor2timesketch/json)](https://pypi.org/project/thor2timesketch/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 
