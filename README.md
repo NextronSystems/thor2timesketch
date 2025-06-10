@@ -299,7 +299,7 @@ _**Issues recorded on 20.05.2025**_
 - **Symptom:** High memory/CPU use, shell freezes, or Timesketch web UI becomes unresponsive during ingestion.
 - **Cause:** OpenSearch (Timesketch backend) [allocates ~50 % of RAM for its JVM heap](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html?utm_source=chatgpt.com), on < 16 GB systems this leaves too little memory for the OS and the *N* event-buffer used by the importer.
 - **Solution:**
-  - Run on a host with ≥ 16 GB RAM (recommended) for the default 50_000 event buffer size. Timesketch explicitly states 8GB is a minimum and ["more the better"](https://timesketch.org/guides/admin/install/#:~:text=,setup%20SSL%20for%20the%20webserver)
+  - Run on a host with ≥ 16 GB RAM (recommended) for the default 50_000 event buffer size. Timesketch explicitly states 8GB is a minimum and ["the more the better"](https://timesketch.org/guides/admin/install/#:~:text=,setup%20SSL%20for%20the%20webserver)
   - Import in smaller batches using the `-b, --buffer-size` argument.
 
 ### 3. JSON Line format required
