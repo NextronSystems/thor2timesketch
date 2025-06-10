@@ -5,31 +5,32 @@ This log conversion utility makes it easy to import [THOR](https://www.nextron-s
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Installation](#installation)
+2. [Quick Start](#quick-start)
+3. [Installation](#installation)
    - [Prerequisites](#prerequisites)
    - [Installation Steps](#steps)
-3. [Usage](#usage)
+4. [Usage](#usage)
    - [Command-Line Arguments](#command-line-arguments)
    - [Examples](#examples)
-4. [Configuration for Timesketch Ingestion](#configuration-for-timesketch-ingestion)
-5. [Filter Configuration](#filter-configuration)
+5. [Configuration for Timesketch Ingestion](#configuration-for-timesketch-ingestion)
+6. [Filter Configuration](#filter-configuration)
    - Standard THOR logs (JSON v1 / v2)
    - Audit-trail logs
-6. [Input and Output Files](#input-and-output-files)
+7. [Input and Output Files](#input-and-output-files)
    - Input Files
    - Output File
-7. [Ingesting into Timesketch](#ingesting-into-timesketch)
+8. [Ingesting into Timesketch](#ingesting-into-timesketch)
    - Manual Upload `jsonl`
    - Automatic Ingestion (`-s, --sketch`)
-8. [Technical Details](#technical-details)
+9. [Technical Details](#technical-details)
      - THOR JSON v1/v2
      - Audit-trail Logs
-9. [Troubleshooting](#troubleshooting)
+10. [Troubleshooting](#troubleshooting)
    - Issues and solutions
-10. [Contributing](#contributing)
+11. [Contributing](#contributing)
     - How to contribute
-11. [License](./LICENSE)
-12. [Support](#support)
+12. [License](./LICENSE)
+13. [Support](#support)
 
 ---
 ## Overview
@@ -46,6 +47,22 @@ This log conversion utility makes it easy to import [THOR](https://www.nextron-s
 * Generating entries with the required Timesketch fields: message, datetime, and timestamp_desc
 
 * Handling **THOR** events with multiple timestamps by creating separate entries for each timestamp
+
+---
+## Quickstart with `thor2ts`
+
+```bash
+# – Install
+pip install thor2timesketch
+```
+```bash
+# – Convert a THOR log file → Timesketch-ready JSONL
+thor2ts thor_scan.json -o thor_events.jsonl
+```
+```bash
+# – Convert and ingest directly into a (new or existing) sketch
+thor2ts thor_scan.json -s "THOR APT SCANNER"
+```
 
 ---
 ## Installation
@@ -92,13 +109,13 @@ Make sure you have the following installed on your system:
 Once the virtual environment is active, you can run the tool from the command line:
 
 ```bash
-thor2ts [input_file] [arguments]
+thor2ts <INPUT_FILE> [OPTIONS]
 ```
 ### Command-Line Arguments
 
 | Argument                         | Description                                                                                                             |
 |----------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `<input-file>`                   | Path to the **THOR** JSON log file. **Required**.                                                                       |
+| `<INPUT_FILE>`                   | Path to the **THOR** JSON log file. **Required**.                                                                       |
 | `-o, --output-file <JSONL_FILE>` | Save the converted **THOR** logs to the specified JSONL output file. **Optional**.                                      |
 | `-s, --sketch <ID\|NAME>`        | Ingest directly into the specified Timesketch sketch (by ID or name). Auto-creates the sketch if missing. **Optional**. |
 | `-b, --buffer-size <N>`          | Set the Timesketch importer buffer size (batch size) for ingestion. **Optional**.                                       |
@@ -326,6 +343,6 @@ Contributions to `thor2ts` are welcome! To contribute:
 
 ---
 ## Support
-If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSystems/thor-ts-mapper.git/issues).
+If you encounter any issues or have questions, please open an issue in the [GitHub repository](https://github.com/NextronSystems/thor2timesketch/issues).
 
 ---
