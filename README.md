@@ -51,18 +51,19 @@ This log conversion utility makes it easy to import [THOR](https://www.nextron-s
 ---
 ## Quickstart with `thor2ts`
 
+#### Install the tool
 ```bash
-# – Install
 pip install thor2timesketch
 ```
+#### Convert a THOR log file → Timesketch-ready JSONL
 ```bash
-# – Convert a THOR log file → Timesketch-ready JSONL
 thor2ts thor_scan.json -o thor_events.jsonl
 ```
+#### Convert and ingest directly into a (new or existing) sketch
 ```bash
-# – Convert and ingest directly into a (new or existing) sketch
 thor2ts thor_scan.json -s "THOR APT SCANNER"
 ```
+> For filtering, batching, and other options, see [Usage](#usage).
 
 ---
 ## Installation
