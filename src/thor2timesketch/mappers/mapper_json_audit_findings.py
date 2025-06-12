@@ -4,7 +4,7 @@ from thor2timesketch.mappers.json_log_version import JsonLogVersion
 from thor2timesketch.mappers.mapped_event import MappedEvent
 from thor2timesketch.mappers.mapper_json_audit import MapperJsonAudit
 from thor2timesketch.utils.datetime_field import DatetimeField
-from thor2timesketch.constants import AUDIT_FINDING
+from thor2timesketch.constants import AUDIT_FINDING, AUDIT_FINDING_TAG
 
 
 @JsonLogVersion.log_version("findings")
@@ -48,7 +48,12 @@ class MapperJsonAuditFindings(MapperJsonAudit):
         return f"{module} - {time_data.path}"
 
     def _get_additional_fields(self, json_log: Dict[str, Any]) -> Dict[str, Any]:
-        additional_fields = {key: value for key, value in json_log.items()}
+        exclude = {
+            self.__class__.THOR_MESSAGE_FIELD,
+        }
+        additional_fields = {
+            key: value for key, value in json_log.items() if key not in exclude
+            }
         return additional_fields
 
     def _get_thor_timestamp(self, json_log: Dict[str, Any]) -> DatetimeField:
@@ -70,4 +75,4 @@ class MapperJsonAuditFindings(MapperJsonAudit):
             raise MappingError(
                 f"Missing required {type_event} field for additional tags"
             )
-        return [AUDIT_FINDING, type_event]
+        return [AUDIT_FINDING_TAG, type_event]

@@ -40,11 +40,12 @@ class MapperJsonV1(MapperJsonBase):
         return f"{module} - {time_data.path}"
 
     def _get_additional_fields(self, json_log: Dict[str, Any]) -> Dict[str, Any]:
-        exclude_thor_timestamp = self.__class__.THOR_TIMESTAMP_FIELD
+        exclude = {
+            self.__class__.THOR_TIMESTAMP_FIELD,
+            self.__class__.THOR_MESSAGE_FIELD,
+        }
         additional_fields = {
-            key: value
-            for key, value in json_log.items()
-            if key not in [exclude_thor_timestamp]
+            key: value for key, value in json_log.items() if key not in exclude
         }
         return additional_fields
 
