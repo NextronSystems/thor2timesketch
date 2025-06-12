@@ -53,7 +53,7 @@ class MapperJsonAuditFindings(MapperJsonAudit):
         }
         additional_fields = {
             key: value for key, value in json_log.items() if key not in exclude
-            }
+        }
         return additional_fields
 
     def _get_thor_timestamp(self, json_log: Dict[str, Any]) -> DatetimeField:
