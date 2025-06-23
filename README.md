@@ -12,40 +12,37 @@ This log conversion utility makes it easy to import [THOR](https://www.nextron-s
 4. [Usage](#usage)
    - [Command-Line Arguments](#command-line-arguments)
    - [Examples](#examples)
-5. [Configuration for Timesketch Ingestion](#configuration-for-timesketch-ingestion)
-6. [Filter Configuration](#filter-configuration)
+5. [Running with Docker](#running-with-docker)
+6. [Configuration for Timesketch Ingestion](#configuration-for-timesketch-ingestion)
+7. [Filter Configuration](#filter-configuration)
    - Standard THOR logs (JSON v1 / v2)
    - Audit-trail logs
-7. [Input and Output Files](#input-and-output-files)
+8. [Input and Output Files](#input-and-output-files)
    - Input Files
    - Output File
-8. [Ingesting into Timesketch](#ingesting-into-timesketch)
+9. [Ingesting into Timesketch](#ingesting-into-timesketch)
    - Manual Upload `jsonl`
    - Automatic Ingestion (`-s, --sketch`)
-9. [Technical Details](#technical-details)
+10. [Technical Details](#technical-details)
      - THOR JSON v1/v2
      - Audit-trail Logs
-10. [Troubleshooting](#troubleshooting)
-   - Issues and solutions
-11. [Contributing](#contributing)
+11. [Troubleshooting](#troubleshooting)
+    - Issues and solutions
+12. [Contributing](#contributing)
     - How to contribute
-12. [License](./LICENSE)
-13. [Support](#support)
+13. [License](./LICENSE)
+14. [Support](#support)
 
 ---
 ## Overview
 
-
 [![thor2ts](https://img.shields.io/badge/dynamic/json?label=thor2ts&query=%24.info.version&url=https://pypi.org/pypi/thor2timesketch/json)](https://pypi.org/project/thor2timesketch/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-
 
 **thor2ts** is a lightweight CLI utility that converts THOR security scanner logs into Timesketch-compatible JSONL format by:
 
 * Extracting relevant fields from **THOR** logs
-
 * Generating entries with the required Timesketch fields: message, datetime, and timestamp_desc
-
 * Handling **THOR** events with multiple timestamps by creating separate entries for each timestamp
 
 ---
@@ -78,7 +75,6 @@ Make sure you have the following installed on your system:
 
 ### Steps
 1. Create a virtual environment:
-
    * Linux / macOS (bash / zsh)
     ```bash
     python3 -m venv thor2ts-venv
@@ -88,7 +84,6 @@ Make sure you have the following installed on your system:
     py -3 -m venv thor2ts-venv
     ```
 2. Activate the virtual environment `thor2ts-venv`:
-
    * Linux / macOS (bash / zsh)
     ```bash
     source thor2ts-venv/bin/activate
@@ -101,10 +96,11 @@ Make sure you have the following installed on your system:
     ```bash
     pip install thor2timesketch
     ```
-
 4. Future Use
-
     To use `thor2ts` in the new terminal, activate the virtual environment, (see `step 2 - Activate the virtual environment` above).
+
+    > **Alternative: Running with Docker**  
+    > If you prefer to use Docker, you can build a Docker image and run the tool in a container. This avoids installing Python and dependencies on your host machine. See [Running with Docker](#running-with-docker) for detailed instructions.
 
 ---
 ## Usage
@@ -138,21 +134,75 @@ thor2ts <INPUT_FILE> [OPTIONS]
 | Enable Debug Mode                  | `thor2ts thor_scan.json -s "THOR APT SCANNER" --verbose`           |
 
 ---
+## Running with Docker
+
+If you prefer not to install Python or dependencies manually, you can run `thor2ts` using Docker.
+
+### Build the Docker Image
+
+To ensure proper file permissions for mounted volumes, build the Docker image with your user ID (UID) so the container’s non-root user matches your host user. In the root of the repository (where the `Dockerfile` is), run:
+
+```bash
+docker build --build-arg UID=$(id -u) -t thor2timesketch .
+```
+
+This builds the image with a non-root user (`thor`) whose user ID (UID) matches your host user’s UID, ensuring seamless file permission handling for mounted volumes. If the `--build-arg UID` is not specified, the UID defaults to `1000`, which may cause permission issues if it does not match your host user’s UID.
+
+For Timesketch ingestion, ensure that the Timesketch configuration files (`~/.timesketchrc` and `~/.timesketch.token`) on your host are readable by the `thor` user. You can check permissions with `ls -l ~/.timesketch*` and adjust them if needed using `chmod o+r ~/.timesketchrc ~/.timesketch.token` to grant read access to others, or use a more restrictive approach like `chown` to align with your UID.
+
+> **Note**: A `.dockerignore` file is included to exclude unnecessary files (e.g., documentation, development files, and the local `thor2ts-venv` virtual environment) from the Docker build context, improving build efficiency and security.
+
+### Run the Tool
+
+Use volume mounting to provide access to your THOR logs and output directory.
+
+- **Convert THOR logs to JSONL:**
+  ```bash
+  docker run --rm \
+    -v "$PWD:/data" \
+    thor2timesketch thor2ts /data/thor_scan.json -o /data/thor_events.jsonl
+  ```
+  This assumes your input file `thor_scan.json` is in the current directory, and the output file `thor_events.jsonl` will be written there.
+
+- **Ingest directly into Timesketch:**
+  To ingest into a Timesketch sketch, mount your Timesketch configuration files:
+  ```bash
+  docker run --rm \
+    -v "$PWD:/data" \
+    -v $HOME/.timesketchrc:/home/thor/.timesketchrc:ro \
+    -v $HOME/.timesketch.token:/home/thor/.timesketch.token:ro \
+    thor2timesketch thor2ts /data/thor_scan.json -s "THOR APT SCANNER"
+  ```
+  > **Note:** Ensure your `~/.timesketchrc` and `~/.timesketch.token` files exist locally and contain valid Timesketch credentials/config.
+
+### Example Commands
+
+| Scenario                           | Docker Command                                                                 |
+|------------------------------------|--------------------------------------------------------------------------------|
+| Convert to JSONL Output File       | ```docker run --rm -v "$PWD:/data" thor2timesketch thor2ts /data/thor_scan.json -o /data/output.jsonl``` |
+| Convert & Ingest to Sketch         | ```docker run --rm -v "$PWD:/data" -v $HOME/.timesketchrc:/home/thor/.timesketchrc:ro -v $HOME/.timesketch.token:/home/thor/.timesketch.token:ro thor2timesketch thor2ts /data/thor_scan.json -s "THOR APT SCANNER"``` |
+| Use Custom Filter                  | `docker run --rm -v "$PWD:/data" thor2timesketch thor2ts /data/thor_scan.json -F /data/filter.yaml -o /data/output.jsonl` |
+| Generate Filter Template           | `docker run --rm -v "$PWD:/data" thor2timesketch thor2ts --generate-filter` |
+
+### Notes on Volume Mounting and Permissions
+
+- **User Alignment:** The Docker image runs as a non-root user (`thor`) with a UID matching your host user (set via `--build-arg UID=$(id -u)`). This ensures files created by the container have the correct ownership on your host system.
+- **Volume Mounting:** Mount your working directory (e.g., `$PWD:/data`) and configuration files (e.g., `$HOME/.timesketchrc:/home/thor/.timesketchrc:ro`). Ensure these host paths are accessible by your user to avoid permission issues.
+- **Alternative Approach:** If you encounter permission issues or prefer not to rebuild the image, you can override the container user with `--user $(id -u):$(id -g)` during `docker run`. However, this may cause issues if the container’s internal files (owned by `thor`) are not accessible to the overridden user. Rebuilding with your UID is recommended.
+
+---
 ## Configuration for Timesketch Ingestion
 
 When you ingest for the first time (`-s, --sketch`), you will be prompted to enter your Timesketch connection settings:
 
 1. **host_uri**
    URL of your Timesketch server (e.g. `https://timesketch.example.com`)
-
 2. **auth_mode**
    Authentication mode:
    - `userpass` (username/password)
    - `oauth` (OAuth2)
-
 3. **username**
    Timesketch USERNAME
-
 4. **password**
    Timesketch password (**Note:** It will be tokenized and stored securely)
 
@@ -176,7 +226,7 @@ cred_key = <generated_key>
 ```
 For more detailed information about the Timesketch API client configuration and usage, please check out the [Timesketch API client documentation](https://timesketch.org/developers/api-client/).
 
-___
+---
 ## Filter Configuration
 
 Thor2timesketch supports two filter scopes. The usage of filters is optional and sane defaults are used (that can be explicitly written to a config using the `--generate-filter` flag):
@@ -185,7 +235,6 @@ Thor2timesketch supports two filter scopes. The usage of filters is optional and
 
 - **filters.levels**
   A list of THOR log `level` values to include (e.g., `Alert`, `Warning`).
-
 - **filters.modules**
   - `include`: THOR log `module` names to include
   - `exclude`: THOR log `module` names to exclude
@@ -247,34 +296,34 @@ Add `-s, --sketch <ID|NAME>` to your `thor2ts` command and it will:
    - If indexing completes in time, you can go to the sketch immediately
    - Otherwise, ingestion continues in the background
 4. **Buffer size** is set to 50,000 events by default, but you can adjust it with `-b, --buffer-size <N>`.
-___
+
+---
 ## Technical Details
 ### Field Mapping Logic
 
 When a THOR record contains multiple timestamp fields, each timestamp is extracted into its own Timesketch event.
->All events derived from the same THOR log share a common `event_group_id` (a UUID) so you can correlate primary and secondary events.
+> All events derived from the same THOR log share a common `event_group_id` (a UUID) so you can correlate primary and secondary events.
 
 ### 1. THOR JSON v1/v2
 
 #### **THOR event**
-  - `message` ← original `"message"` (e.g. `"Malicious user details found"`)
-  - `datetime` ← `"time"` (e.g. `2025-05-07T11:45:01+00:00`)
-  - `timestamp_desc` ← `THOR scan timestamp`
-  - `event_group_id` ← UUID generated per THOR event
-  - `tag` ← `["thor", <Level>]` (e.g. `["thor","Alert"]`)
-  - `**fields` ← all other fields from THOR log
+- `message` ← original `"message"` (e.g. `"Malicious user details found"`)
+- `datetime` ← `"time"` (e.g. `2025-05-07T11:45:01+00:00`)
+- `timestamp_desc` ← `THOR scan timestamp`
+- `event_group_id` ← UUID generated per THOR event
+- `tag` ← `["thor", <Level>]` (e.g. `["thor","Alert"]`)
+- `**fields` ← all other fields from THOR log
 
 - **Secondary events** (for each timestamp in THOR event)
-  - `message` ← original `"message"` (e.g. `"Malicious user details found"`)
-  - `datetime` ← time (e.g. `"last_logon"`)
-  - `timestamp_desc` ← `"<module> - <field>"` (e.g. `Users - last_logon`)
-  - `event_group_id` ← same UUID as THOR event
-  - `tag` ← `["ts_extra", <Level>]`
+- `message` ← original `"message"` (e.g. `"Malicious user details found"`)
+- `datetime` ← time (e.g. `"last_logon"`)
+- `timestamp_desc` ← `"<module> - <field>"` (e.g. `Users - last_logon`)
+- `event_group_id` ← same UUID as THOR event
+- `tag` ← `["ts_extra", <Level>]`
 
 ### 2. Audit-trail Logs
 
 #### **Info entries**
-
 For each timestamp in `info`:
 - `message` ← `Name` (e.g. `"File"`)
 - `datetime` ← timestamp value (e.g. `2025-05-07T11:45:01+00:00`)
@@ -284,7 +333,6 @@ For each timestamp in `info`:
 - **First event** includes all other info fields
 
 #### **Findings entries**
-
 For each finding under `findings`:
 - `message` ← finding’s `Message` (e.g. `"Malware file found"`)
 - `datetime` ← timestamp value
@@ -292,14 +340,15 @@ For each finding under `findings`:
 - `tag` ← `["findings", <Level>]` (e.g. `["findings","Alert"]`)
 - `event_group_id` ← UUID for this audit record
 - **First event** includes all other finding fields
->NOTE: Use `event_group_id` to correlate first and secondary events from the same THOR log or audit-trail log.
+> NOTE: Use `event_group_id` to correlate first and secondary events from the same THOR log or audit-trail log.
 
+---
 ## Troubleshooting
 _**Issues recorded on 20.05.2025**_
 
 ### 1. Multiple data sources created
-- **Symptom:** Every ~50 000 events shows up as a separate data source in the sketch.
-- **Cause:** The importer’s default batch size is [50 000 events](https://github.com/google/timesketch/blob/master/importer_client/python/timesketch_import_client/importer.py) per upload.
+- **Symptom:** Every ~50,000 events shows up as a separate data source in the sketch.
+- **Cause:** The importer’s default batch size is [50,000 events](https://github.com/google/timesketch/blob/master/importer_client/python/timesketch_import_client/importer.py) per upload.
 - **Solution:**
   1. Use the `-b, --buffer-size` argument to increase the batch size.
      ```bash
@@ -317,9 +366,9 @@ _**Issues recorded on 20.05.2025**_
 
 ### 2. Timesketch host becomes unresponsive while ingesting THOR logs
 - **Symptom:** High memory/CPU use, shell freezes, or Timesketch web UI becomes unresponsive during ingestion.
-- **Cause:** OpenSearch (Timesketch backend) [allocates ~50 % of RAM for its JVM heap](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html?utm_source=chatgpt.com), on < 16 GB systems this leaves too little memory for the OS and the *N* event-buffer used by the importer.
+- **Cause:** OpenSearch (Timesketch backend) [allocates ~50% of RAM for its JVM heap](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/auto-tune.html?utm_source=chatgpt.com), on < 16 GB systems this leaves too little memory for the OS and the *N* event-buffer used by the importer.
 - **Solution:**
-  - Run on a host with ≥ 16 GB RAM (recommended) for the default 50_000 event buffer size. Timesketch explicitly states 8GB is a minimum and ["the more the better"](https://timesketch.org/guides/admin/install/#:~:text=,setup%20SSL%20for%20the%20webserver)
+  - Run on a host with ≥ 16 GB RAM (recommended) for the default 50,000 event buffer size. Timesketch explicitly states 8GB is a minimum and ["the more the better"](https://timesketch.org/guides/admin/install/#:~:text=,setup%20SSL%20for%20the%20webserver)
   - Import in smaller batches using the `-b, --buffer-size` argument.
 
 ### 3. JSON Line format required
@@ -337,6 +386,7 @@ _**Issues recorded on 20.05.2025**_
   ```bash
   timesketch_importer --sketch_id <ID> mapped_events.jsonl
   ```
+
 ---
 ## Contributing
 Contributions to `thor2ts` are welcome! To contribute:
