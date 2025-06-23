@@ -66,6 +66,56 @@ thor2ts thor_scan.json -s "THOR APT SCANNER"
 > For filtering, batching, and other options, see [Usage](#usage).
 
 ---
+## Docker Usage
+
+If you prefer not to install Python or dependencies manually, you can run `thor2ts` using Docker.
+
+### Build the Docker Image
+
+In the root of the repository (where the `Dockerfile` is), run:
+
+```bash
+docker build -t thor2timesketch .
+```
+
+### Run the Tool
+
+You can run the tool using volume mounting to provide access to your THOR logs and output directory:
+
+```bash
+docker run --rm \
+  -v "$PWD:/data" \
+  thor2timesketch thor_scan.json -o thor_events.jsonl
+```
+
+This assumes:
+- Your input file `thor_scan.json` is in the current directory.
+- The output file `thor_events.jsonl` will be written to the same directory.
+
+### Ingest Directly into Timesketch
+
+To ingest into a Timesketch sketch directly from the container:
+
+```bash
+docker run --rm \
+  -v "$PWD:/data" \
+  -v $HOME/.timesketchrc:/root/.timesketchrc:ro \
+  -v $HOME/.timesketch.token:/root/.timesketch.token:ro \
+  thor2timesketch thor_scan.json -s "THOR APT SCANNER"
+```
+
+> Make sure your `~/.timesketchrc` and `~/.timesketch.token` files exist locally and contain valid Timesketch credentials/config.
+
+### Example Commands
+
+| Scenario                           | Docker Command                                                                 |
+|------------------------------------|--------------------------------------------------------------------------------|
+| Convert to JSONL Output File       | `docker run --rm -v "$PWD:/data" thor2timesketch thor_scan.json -o output.jsonl` |
+| Convert & Ingest to Sketch         | `docker run --rm -v "$PWD:/data" -v $HOME/.timesketchrc:/root/.timesketchrc:ro -v $HOME/.timesketch.token:/root/.timesketch.token:ro thor2timesketch thor_scan.json -s "THOR APT SCANNER"` |
+| Use Custom Filter                  | `docker run --rm -v "$PWD:/data" thor2timesketch thor_scan.json -F /data/filter.yaml -o output.jsonl` |
+| Generate Filter Template           | `docker run --rm -v "$PWD:/data" thor2timesketch --generate-filter`            |
+
+---
 ## Installation
 ### Prerequisites
 Make sure you have the following installed on your system:
