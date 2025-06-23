@@ -1,0 +1,30 @@
+# Git-related files
+.git
+.gitignore
+
+# Documentation and licensing
+README.md
+LICENSE
+
+# Development and testing files
+mypy.ini
+requirements-dev.txt
+tests/
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Python virtual environment
+thor2ts-venv/
+
+# Temporary and editor files
+*.log
+*.tmp
+*.swp
+.vscode/
+.idea/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
